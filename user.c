@@ -27,10 +27,10 @@
 #define ENCODER_FRAME 0X9010
 #define ACCELERATION_BITMASK 0X1010
 #define CONFIG_MODESET 0X1008
-#define RED 0x5100
-#define GREEN 0x5104
-#define BLUE 0x5108
-#define ALPHA 0x510C
+#define RED 0x5018
+#define GREEN 0x5014
+#define BLUE 0x5010
+#define ALPHA 0x501C
 #define RASTER_CLEAR 0x3008
 #define RASTER_FLUSH 0x3FFC
 #define FIFO_HEAD 0x4010
@@ -40,7 +40,12 @@
 #define FIFO_FLUSH _IO(0XCC, 4)
 #define GRAPHICS_ON 1
 #define GRAPHICS_OFF 0
-
+#define RASTER_PRIMITIVE 0x3000
+#define X_COORDINATE 0X5000
+#define Y_COORDINATE 0X5004
+#define Z_COORDINATE 0X5008
+#define W_COORDINATE 0X500C
+#define VERTEX_EMIT  0x3004
 
 struct u_kyouko_device {
 unsigned int *u_control_base;
@@ -72,14 +77,97 @@ printf("Ram size in MB is: %d\n",result);
 ioctl(fd,VMODE,GRAPHICS_ON);
 for(i=200*1024;i<201*1024;i++)
 {
-U_WRITE_REG(i,0xff0000);
+//U_WRITE_REG(i,0xff0000);
 }
+float zero = 0.0;
+float one = 1.0;	
+float x1 = 0.0;
+float y1 = -0.5;
+float x2= -0.5;
+float y2 = 0.5;
+float x3 = 0.5;
+float y3 = 0.5;
+float a= 1.0;
+float b=0.0;
+float c=0.0;
+float d = 0.0;
+float e = 1.0;
+float f = 0.0;
+float g = 0.0;
+float h = 0.0;
+float it = 1.0;
+unsigned int zero_zs_int = *(unsigned int*)&zero;
+unsigned int one_us_int = *(unsigned int*)&one;
+unsigned int x1_int = *(unsigned int*)&x1;
+unsigned int y1_int = *(unsigned int*)&y1;
+unsigned int x2_int = *(unsigned int*)&x2;
+unsigned int y2_int = *(unsigned int*)&y2;
+unsigned int x3_int = *(unsigned int*)&x3;
+unsigned int y3_int = *(unsigned int*)&y3;
+unsigned int aa = *(unsigned int*)&a;
+unsigned int bb = *(unsigned int*)&b;
+unsigned int cc = *(unsigned int*)&c;
+unsigned int dd = *(unsigned int*)&d;
+unsigned int ee = *(unsigned int*)&e;
+unsigned int ff = *(unsigned int*)&f;
+unsigned int gg = *(unsigned int*)&g;
+unsigned int hh = *(unsigned int*)&h;
+unsigned int ii = *(unsigned int*)&it;
 struct fifo_entry{
 unsigned int command;
 unsigned int value;
 };
-struct fifo_entry entry = {0x3FFC, 0};
-ioctl(fd,FIFO_QUEUE,&entry);
+struct fifo_entry entry[24] = {{RASTER_PRIMITIVE,1}, 
+			      {X_COORDINATE, x1_int},
+			      {Y_COORDINATE, y1_int},
+			      {Z_COORDINATE, zero_zs_int},
+			      {W_COORDINATE, one_us_int},
+			      {X_COORDINATE, x2_int},
+			      {Y_COORDINATE, y2_int},
+			      {Z_COORDINATE, zero_zs_int},
+			      {X_COORDINATE, x3_int},
+			      {Y_COORDINATE, y3_int},
+			      {Z_COORDINATE, zero_zs_int},
+                              {BLUE, aa},
+			      {GREEN, bb},
+			      {RED, cc},
+                              {ALPHA, zero_zs_int},
+			      {VERTEX_EMIT,0},
+			      {RASTER_PRIMITIVE,0},
+			      {RASTER_FLUSH,0},
+			      {BLUE, dd},
+			      {GREEN, ee},
+			      {RED, ff},
+                              {BLUE, gg},
+			      {GREEN, hh},
+			      {RED, ii},
+                              };	
+ioctl(fd, FIFO_QUEUE, &entry[0]);
+ioctl(fd, FIFO_QUEUE, &entry[1]);
+ioctl(fd, FIFO_QUEUE, &entry[2]);
+ioctl(fd, FIFO_QUEUE, &entry[3]);
+ioctl(fd, FIFO_QUEUE, &entry[4]);
+ioctl(fd, FIFO_QUEUE, &entry[11]);
+ioctl(fd, FIFO_QUEUE, &entry[12]);
+ioctl(fd, FIFO_QUEUE, &entry[13]);
+ioctl(fd, FIFO_QUEUE, &entry[14]);
+ioctl(fd, FIFO_QUEUE, &entry[15]);
+ioctl(fd, FIFO_QUEUE, &entry[5]);
+ioctl(fd, FIFO_QUEUE, &entry[6]);
+ioctl(fd, FIFO_QUEUE, &entry[7]);
+ioctl(fd, FIFO_QUEUE, &entry[18]);
+ioctl(fd, FIFO_QUEUE, &entry[19]);
+ioctl(fd, FIFO_QUEUE, &entry[20]);
+ioctl(fd, FIFO_QUEUE, &entry[15]);
+ioctl(fd, FIFO_QUEUE, &entry[8]);
+ioctl(fd, FIFO_QUEUE, &entry[9]);
+ioctl(fd, FIFO_QUEUE, &entry[10]);
+ioctl(fd, FIFO_QUEUE, &entry[21]);
+ioctl(fd, FIFO_QUEUE, &entry[22]);
+ioctl(fd, FIFO_QUEUE, &entry[23]);
+ioctl(fd, FIFO_QUEUE, &entry[15]);
+ioctl(fd, FIFO_QUEUE, &entry[16]);
+ioctl(fd, FIFO_QUEUE, &entry[17]);
 ioctl(fd,FIFO_FLUSH);
 sleep(5);
 ioctl(fd,VMODE,GRAPHICS_OFF);

@@ -32,6 +32,7 @@
 #define ALPHA 0x510C
 #define RASTER_CLEAR 0x3008
 #define RASTER_FLUSH 0x3FFC
+#define RASTER_PRIMITIVE 0x3000
 #define FIFO_HEAD 0x4010
 #define FIFO_TAIL 0x4014
 #define VMODE _IOW(0xCC, 0, unsigned long)
@@ -39,6 +40,10 @@
 #define FIFO_FLUSH _IO(0XCC, 4)
 #define GRAPHICS_ON 1
 #define GRAPHICS_OFF 0
+#define X_COORDINATE 0X5000
+#define Y_COORDINATE 0X5004
+#define Z_COORDINATE 0X5008
+#define W_COORDINATE 0X500C
 MODULE_LICENSE("Proprietary");
 MODULE_AUTHOR("Mansi Pratz");
 
@@ -118,15 +123,17 @@ void fifo_flush()
 void kyouko3_ioctl(struct file *fp, unsigned int cmd, unsigned long arg){
 	float one = 1.0;
 	float zero = 0.0;
+	float minus= -1.0;
 	unsigned int one_us_int = *(unsigned int*)&one;
 	unsigned int zero_zs_int = *(unsigned int*)&zero;
+	unsigned int minus_one_int = *(unsigned int*)&minus;
 	switch(cmd){
                 int ret;
 		case FIFO_QUEUE:
 				
 			       ret = copy_from_user(kyouko3.fifo.k_base,(struct fifo_entry *)arg, sizeof(struct fifo_entry));
 				FIFO_WRITE(kyouko3.fifo.k_base->command,kyouko3.fifo.k_base->value);
-				break;                                    
+     				break;                                    
 		case FIFO_FLUSH:
 				fifo_flush();
 				break;
@@ -147,8 +154,8 @@ void kyouko3_ioctl(struct file *fp, unsigned int cmd, unsigned long arg){
 		
 		msleep(10);
 		
-		FIFO_WRITE(RED, zero_zs_int);
-		FIFO_WRITE(GREEN, zero_zs_int);
+		FIFO_WRITE(RED, one_us_int);
+		FIFO_WRITE(GREEN, one_us_int);
 		FIFO_WRITE(BLUE,  one_us_int) ;
 		FIFO_WRITE(ALPHA, zero_zs_int);
 		FIFO_WRITE(RASTER_CLEAR, 0x03);
