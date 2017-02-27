@@ -5,18 +5,18 @@ Device driver for the Kyouko3 PCIe graphics card that resides in each of the vir
 
 The steps to be followed to run this software:
 
-1. Create a symbolic link to the graphics card:
+1. Create a symbolic link to the graphics card:<br/>
 mknod /dev/kyouko3 c 500 127
-
-2. Make the file:
+<br/>
+2. Make the file:<br/>
 make
-
-3. Insert the module into the kernel:
+<br/>
+3. Insert the module into the kernel:<br/>
 /sbin/insmod mymod.ko
-
-4. Run the user level code:
-gcc user.c
+<br/>
+4. Run the user level code:<br/>
+gcc user.c<br/>
 ./a.out
-
-5. Remove the module from the kernel after seeing the output:
+<br/>
+5. Remove the module from the kernel after seeing the output:<br/>
 /sbin/rmmod mymod
