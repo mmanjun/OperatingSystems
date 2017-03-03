@@ -1,3 +1,7 @@
+
+// User Code
+
+
 #include<fcntl.h>
 #include<stdio.h>
 #include<errno.h>
@@ -8,15 +12,19 @@
 #include<linux/ioctl.h>
 #include <linux/sched.h>
 #include<stdlib.h>
-#define TOTAL 50
+
+// number of rows and column
+#define TOTAL 30
 
 float RADIUS = 0.7;
-float HALF_PI = 1.57079632679489661923;
+float HPI = 1.57079632679489661923;
 float PI = 3.14159265358979323846;
+
 struct vertex{
 float x,y,z;
 };
 
+// size is one more than total rows and column, to avoid indexoutofbound 
 struct vertex vertces[TOTAL+1][TOTAL+1];
 
 /* User defined header files */
@@ -34,73 +42,85 @@ unsigned int U_READ_REG(unsigned int rgister)
   return(*(u_kyouko3.u_control_base+(rgister>>2)));
 }
 
+// generate random color between 0 to 1
 float generate_color()
 {
-return (float)rand() / (float)RAND_MAX ;
+  return (float)rand() / (float)RAND_MAX ;
 }
 
-float map_range(float value, float istart, float istop, float ostart, float ostop) 
+// convert index to theta for longitude range is -180 to 180 degree
+// for latitude it is -90 to 90 degree
+float map_range(float index, float indexst, float indexed, float expecst, float expeced) 
 {
-      return ostart + (ostop - ostart) * ((value - istart) / (istop - istart));
+  return expecst + (expeced - expecst) * ((index - indexst) / (indexed - indexst));
 }
 
+
+// computing all coordinates on sphere before
 void compute_vertices()
 {
-int i = 0 ,j = 0;
-for(i = 0 ; i < TOTAL+1 ; i++)
-{
-float latitude = map_range(i , 0 , TOTAL , -HALF_PI , HALF_PI); 
+  int i = 0 ,j = 0;
+  for(i = 0 ; i < TOTAL+1 ; i++)
+  {
+    // latitude range of sphere is -90 to 90
+    float latitude = map_range(i , 0 , TOTAL , -HPI , HPI); 
 
-for(j = 0 ; j < TOTAL+1 ; j++)
-{
-float longitude = map_range(j , 0 , TOTAL , -PI , PI);
+    for(j = 0 ; j < TOTAL+1 ; j++)
+    {
+      // longitude range of sphere is -180 to 180
+      float longitude = map_range(j , 0 , TOTAL , -PI , PI);
 
-vertces[i][j].x = RADIUS * sin(longitude) * cos(latitude);
-vertces[i][j].y = RADIUS * sin(longitude) * sin(latitude);
-vertces[i][j].z = RADIUS * cos(longitude);
-
+      // computing coordinates
+      vertces[i][j].x = RADIUS * sin(longitude) * cos(latitude);
+      vertces[i][j].y = RADIUS * sin(longitude) * sin(latitude);
+      vertces[i][j].z = RADIUS * cos(longitude);
+    }
+  }
 }
-}
-}
 
+
+// fill dma buffer
+// considering vertices of triangle to be two adjacent vertices and one below them
 void draw(int i,int j, unsigned int* dma_base, int* count)
 {
-int total_count = *count;
-float zero = 0.0;
-int k = 0;
-for (k = 0; k < 3; k++)
-{
-total_count++;
-float color = generate_color(); 
-*dma_base++ =  *(unsigned int*)&color;
-}
-*dma_base++ =  *(unsigned int*)&vertces[i][j].x;
-*dma_base++ =  *(unsigned int*)&vertces[i][j].y;
-*dma_base++ =  *(unsigned int*)&vertces[i][j].z;
-total_count +=3;
+  int total_count = *count;
+  float zero = 0.0;
+  int k = 0;
 
-for (k = 0; k < 3; k++)
-{
-total_count++;
-float color = generate_color(); 
-*dma_base++ =  *(unsigned int*)&color;
-}
-*dma_base++ =  *(unsigned int*)&vertces[i+1][j].x;
-*dma_base++ =  *(unsigned int*)&vertces[i+1][j].y;
-*dma_base++ =  *(unsigned int*)&vertces[i+1][j].z;
-total_count +=3;
+  // fill random color
+  for (k = 0; k < 3; k++)
+  {
+    total_count++;
+    float color = generate_color(); 
+    *dma_base++ =  *(unsigned int*)&color;
+  }
+  *dma_base++ =  *(unsigned int*)&vertces[i][j].x;
+  *dma_base++ =  *(unsigned int*)&vertces[i][j].y;
+  *dma_base++ =  *(unsigned int*)&vertces[i][j].z;
+  total_count +=3;
 
-for (k = 0; k < 3; k++)
-{
-total_count++;
-float color = generate_color();
-*dma_base++ =  *(unsigned int*)&color;
-}
-*dma_base++ =  *(unsigned int*)&vertces[i][j+1].x;
-*dma_base++ =  *(unsigned int*)&vertces[i][j+1].y;
-*dma_base++ =  *(unsigned int*)&vertces[i][j+1].z;
-total_count +=3;
-*count = total_count;
+  for (k = 0; k < 3; k++)
+  {
+    total_count++;
+    float color = generate_color(); 
+    *dma_base++ =  *(unsigned int*)&color;
+  }
+  *dma_base++ =  *(unsigned int*)&vertces[i+1][j].x;
+  *dma_base++ =  *(unsigned int*)&vertces[i+1][j].y;
+  *dma_base++ =  *(unsigned int*)&vertces[i+1][j].z;
+  total_count +=3;
+
+  for (k = 0; k < 3; k++)
+  {
+    total_count++;
+    float color = generate_color();
+    *dma_base++ =  *(unsigned int*)&color;
+  }
+  *dma_base++ =  *(unsigned int*)&vertces[i][j+1].x;
+  *dma_base++ =  *(unsigned int*)&vertces[i][j+1].y;
+  *dma_base++ =  *(unsigned int*)&vertces[i][j+1].z;
+  total_count +=3;
+  *count = total_count;
 }
 
 void fifo_triangle(int fd)
@@ -125,7 +145,7 @@ void fifo_triangle(int fd)
   float g = 0.0;
   float h = 0.0;
   float it = 1.0;
- unsigned int zero_zs_int = *(unsigned int*)&zero;
+  unsigned int zero_zs_int = *(unsigned int*)&zero;
   unsigned int one_us_int = *(unsigned int*)&one;
   unsigned int a1_int = *(unsigned int*)&a1;
   unsigned int b1_int = *(unsigned int*)&b1;
@@ -208,61 +228,36 @@ return *(unsigned int*)zz;
 
 void dma_triangles(int fd)
 {
-  float zero=0.0;
-  float one=1.0;
- 
-  unsigned int zero_zs_int = *(unsigned int*)&zero;
-  unsigned int one_us_int = *(unsigned int*)&one;
-
-  float a = 1.0;
-  float b = 0.0;
-  float c = 0.0;
-  float d = 0.0;
-  float e = 1.0;
-  float f = 0.0;
-  float g = 0.0;
-  float h = 0.0;
-  float it= 1.0;
-  unsigned int aa = ftoui(&a);
-  unsigned int bb = ftoui(&b);
-  unsigned int cc = ftoui(&c);
-  unsigned int dd = ftoui(&d);
-  unsigned int ee = ftoui(&e);
-  unsigned int ff = ftoui(&f);
-  unsigned int gg = ftoui(&g);
-  unsigned int hh = ftoui(&h);
-  unsigned int ii = ftoui(&it);
-
 
 struct fifo_entry d_entry[1]={{RASTER_FLUSH,0}};
 
-  unsigned long dmabase = 0;
-  unsigned int* buf;
+unsigned long dmabase = 0;
+unsigned int* tempbase;
 
- ioctl(fd,BIND_DMA,&dmabase);
+ioctl(fd,BIND_DMA,&dmabase);
   
-buf = (unsigned int*) dmabase;
-compute_vertices();//sphere
+tempbase = (unsigned int*) dmabase;
+compute_vertices();
 hdr.address = 0x1045;
 hdr.opcode = 0x0014;
-hdr.count =0x0003;
+hdr.count = 3;
 
 int i = 0;
 int count = 0;
 int j =0;
 for(i = 0 ; i < TOTAL+1 ; i++){
 for(j = 0 ; j < TOTAL+1 ; j++){
-*buf++ = *(unsigned int *)&hdr;
+*tempbase++ = *(unsigned int *)&hdr;
 count++;
-draw(i,j, buf,&count);
+draw(i,j,tempbase,&count);
 dmabase = count * 4;
 ioctl(fd, START_DMA, &dmabase);
-buf = (unsigned int *)dmabase;
+tempbase = (unsigned int *)dmabase;
 ioctl(fd,FIFO_QUEUE,&d_entry[0]);
 count = 0;
 }
 }
-sleep(10);
+sleep(5);
 ioctl(fd,FIFO_FLUSH,0);
 ioctl(fd, UNBIND_DMA, 0);  
 }
@@ -278,19 +273,19 @@ unsigned int* buf;
 
  /* Open the driver */
 fd= open("/dev/kyouko3", O_RDWR);
-   printf("Enter your choice:\n 0: FIFO Triangle\n 1: DMA Triangles\n");
-  scanf("%d",&choice);
-  ioctl(fd,VMODE,GRAPHICS_ON);
+printf("Enter your choice:\n 0: FIFO Triangle\n 1: DMA Triangles\n");
+scanf("%d",&choice);
+ioctl(fd,VMODE,GRAPHICS_ON);
   switch(choice)
 {
 case 0: fifo_triangle(fd);break;
 case 1: dma_triangles(fd);break;
 default: dma_triangles(fd);break;
 }
-  
 sleep(5);
 ioctl(fd,VMODE,GRAPHICS_OFF);
 close(fd);
 return 0;
 }
+
 

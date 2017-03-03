@@ -1,3 +1,6 @@
+
+// Header File
+
 #include<linux/types.h>
 /* Kernel device IDs */
 #define PCI_VENDOR_ID_CCORSI 0x1234
@@ -79,8 +82,6 @@
 
 /* Structures */
 
-/* User level structures */
-
 /* User device structure */
 struct u_kyouko_device 
 {
@@ -88,32 +89,12 @@ struct u_kyouko_device
   unsigned int *u_frame_buffer;
 }u_kyouko3;
 
-/* DMA header structure */
-/*
- struct kyouko3_dma_hdr
+struct kyouko3_dma_hdr
 {
-  unsigned int stride:5;
-  unsigned int bit5:1;
-  unsigned int bit6:1;
-  unsigned int bit7to11:5;
-  unsigned int bit12:1;
-  unsigned int bit13:1;
+  unsigned int address:14;
   unsigned int count:10;
   unsigned int opcode:8;
 }hdr;
- */
-struct kyouko3_dma_hdr
-{
-unsigned int address:14;
-unsigned int count:10;
-unsigned int opcode:8;
-}hdr;
-/* DMA structure */
-struct dma_entry
-{
-  unsigned int *command;
-  unsigned int count;
-};
 
 /* Fifo structures */
 struct fifo_entry
@@ -122,36 +103,4 @@ struct fifo_entry
   unsigned int value;
 };
 
-struct fifo
-{
-  unsigned long p_base;
-  struct fifo_entry *k_base;
-  unsigned int head;
-  unsigned int tail_cache;
-}fifo;
 
-/* Kyouko3 Structures */
-struct kyouko3_struct
-{ 
-  struct pci_dev *pci_dev_saved; 
-  unsigned int *k_control_base;
-  unsigned int *k_card_ram_base;
-  unsigned int p_card_ram_base; 
-  unsigned int p_control_base;
-  unsigned int graphics_on;
-  unsigned int dma_mapped;
-  unsigned int graphics_off;
-  unsigned int fill;
-  unsigned int drain;
-  unsigned int vmmapindex;
-  struct fifo fifo;
-  unsigned int isQueueFull;
-}kyouko3;
-
-struct dma_buffer
-{
-unsigned int *dma_k_base;
-unsigned long dma_p_base;
-unsigned int dma_handle;
-unsigned int dma_buffer_size;
-}dma_buffer_array[8];                    //Circular pool of 8 DMA Buffers
