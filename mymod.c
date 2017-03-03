@@ -45,7 +45,7 @@
 #define Z_COORDINATE 0X5008
 #define W_COORDINATE 0X500C
 MODULE_LICENSE("Proprietary");
-MODULE_AUTHOR("Mansi Pratz");
+MODULE_AUTHOR("Mansasa Prateek");
 
 struct fifo_entry{
 u32 command;
