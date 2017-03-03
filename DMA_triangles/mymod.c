@@ -17,7 +17,7 @@
 #include "kyouko3.h"
 
 MODULE_LICENSE("Proprietary");
-MODULE_AUTHOR("TEAM A");
+MODULE_AUTHOR("Bhavya Manasa Prateek Pratyush");
 
 DECLARE_WAIT_QUEUE_HEAD(dma_snooze);
 
