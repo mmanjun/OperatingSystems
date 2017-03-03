@@ -3,5 +3,3 @@ rmmod mymod.ko
 make
 insmod mymod.ko
 gcc spherenew.c -lm
-
-
