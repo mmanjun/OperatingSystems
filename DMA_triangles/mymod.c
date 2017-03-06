@@ -138,7 +138,7 @@ int kyouko3_open(struct inode *inode, struct file *fp)
   ram_size   		  =  K_READ_REG(DEVICE_RAM);
   ram_size   		 *= (1024*1024);
   kyouko3.k_control_base  = ioremap(kyouko3.p_control_base,KYOUKO_CONTROL_SIZE);
-  kyouko3.k_card_ram_base = ioremap(kyouko3.p_card_ram_base,DEVICE_RAM);
+  kyouko3.k_card_ram_base = ioremap(kyouko3.p_card_ram_base,ram_size);
   kyouko3.fifo.k_base     = pci_alloc_consistent(kyouko3.pci_dev_saved, 124000, &kyouko3.fifo.p_base);
 
   K_WRITE_REG(FIFO_START,kyouko3.fifo.p_base);
