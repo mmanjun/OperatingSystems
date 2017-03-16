@@ -5,7 +5,7 @@ Device driver for the Kyouko3 PCIe graphics card that resides in each of the vir
 
 The steps to be followed to run this software:
 
-1. Make, insert module and run the user program<br/>
+1. Make, insert module and compile the user program<br/>
 ./reinstall.sh
 <br/>
 2. Run the user code<br/>
